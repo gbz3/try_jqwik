@@ -52,3 +52,27 @@ $ mvn test
 ...
 $ 
 ```
+
+## ライフサイクル
+
+- Container: クラス(@BeforeContainer, @AfterContainer)
+- Property: 特性(@BeforeProperty, @AfterProperty)
+- Try: 1回のテスト(@BeforeTry, @AfterTry)
+
+```shell
+before container
+
+before property
+before try
+property: 3
+after try
+before try
+property: 1
+after try
+before try
+property: 4
+after try
+after property
+
+after container
+```
