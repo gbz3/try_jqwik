@@ -3,7 +3,7 @@ package com.github.gbz3.try_jqwik;
 import net.jqwik.api.*;
 import org.assertj.core.api.*;
 
-class PropertyBasedTest {
+class PropertyBasedTest implements AutoCloseable {
 
     @Report({Reporting.GENERATED, Reporting.FALSIFIED})
     @Property
@@ -19,4 +19,12 @@ class PropertyBasedTest {
         Assertions.assertThat(str.length()).isGreaterThan(str2.length());
     }
 
+    PropertyBasedTest() {
+        System.out.println("### Before each ###");
+    }
+
+    @Override
+    public void close() {
+        System.out.println("### After each ###");
+    }
 }
