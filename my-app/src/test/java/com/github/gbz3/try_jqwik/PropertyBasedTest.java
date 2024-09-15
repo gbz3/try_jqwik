@@ -30,6 +30,11 @@ class PropertyBasedTest implements AutoCloseable {
         return Arbitraries.integers().between(Integer.MIN_VALUE + 1, Integer.MAX_VALUE);
     }
 
+    @Property
+    boolean alwaysPositive3(@ForAll(supplier = ExcludeMinValueInteger.class) int anInteger) {
+        return Math.abs(anInteger) >= 0;
+    }
+
     PropertyBasedTest() {
         System.out.println("### Before each ###");
     }
@@ -37,5 +42,12 @@ class PropertyBasedTest implements AutoCloseable {
     @Override
     public void close() {
         System.out.println("### After each ###");
+    }
+}
+
+class ExcludeMinValueInteger implements ArbitrarySupplier<Integer> {
+    @Override
+    public Arbitrary<Integer> get() {
+        return Arbitraries.integers().between(Integer.MIN_VALUE + 1, Integer.MAX_VALUE);
     }
 }
