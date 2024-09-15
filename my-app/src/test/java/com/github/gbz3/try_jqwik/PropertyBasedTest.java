@@ -19,6 +19,17 @@ class PropertyBasedTest implements AutoCloseable {
         Assertions.assertThat(str.length()).isGreaterThan(str2.length());
     }
 
+    static final String NOT_MINIMUM_INT = "exclude MIN_VALUE from Integer";
+    @Property
+    boolean alwaysPositive2(@ForAll(NOT_MINIMUM_INT) int anInteger) {
+        return Math.abs(anInteger) >= 0;
+    }
+
+    @Provide(NOT_MINIMUM_INT)
+    Arbitrary<Integer> genIntVal() {
+        return Arbitraries.integers().between(Integer.MIN_VALUE + 1, Integer.MAX_VALUE);
+    }
+
     PropertyBasedTest() {
         System.out.println("### Before each ###");
     }
