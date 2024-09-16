@@ -3,24 +3,25 @@ package com.github.gbz3.try_jqwik;
 import net.jqwik.api.*;
 import net.jqwik.api.statistics.Statistics;
 import org.assertj.core.api.Assertions;
-import org.assertj.core.data.MapEntry;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class CsvTest implements AutoCloseable {
 
     CsvEncoder _enc = new CsvEncoder() {};
     CsvDecoder _dec = new CsvDecoder() {};
 
-    @Property
+    @Property(tries = 100)
     void symmetric(@ForAll("csvData") List<Map<String, String>> aCsv) {
-        Statistics.collect(aCsv.size());
+        var empty = aCsv.isEmpty() ? "empty": "[" + aCsv.size() + "]";
+        //var sumOfSize = aCsv.isEmpty() ? "*": aCsv.stream().map(Map::size).reduce(Integer::sum).orElse(0);
+        Statistics.collect(empty);
 
         final var encoded = _enc.encode(aCsv);
         Assertions.assertThat(aCsv).isEqualTo(_dec.decode(encoded));
     }
 
+    @SuppressWarnings("unused")
     @Provide
     Arbitrary<List<Map<String, String>>> csvData() {
         var sizeNullable = Arbitraries.integers().between(1, 10).sample();
@@ -38,11 +39,14 @@ public class CsvTest implements AutoCloseable {
                 .ofMinLength(1);
 
         var field = Arbitraries.oneOf(unquotedText, quotableText);
-        //var colNames = field.set().ofSize(size);
+//        var colNames = field.set().ofSize(size);
 
-        var aMap = Arbitraries.maps(field, field).ofSize(size);
+        return Arbitraries
+                .maps(field, field)
+                .ofSize(size)
+                .list()
+                ;
 
-        return aMap.list();
     }
 
     @Override
