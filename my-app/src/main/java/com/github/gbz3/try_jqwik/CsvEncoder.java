@@ -1,7 +1,6 @@
 package com.github.gbz3.try_jqwik;
 
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public interface CsvEncoder {
