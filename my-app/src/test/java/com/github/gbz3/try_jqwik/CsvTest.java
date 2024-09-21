@@ -35,15 +35,12 @@ public class CsvTest implements AutoCloseable {
                 .ofMinLength(1);
 
         var quotableText = Arbitraries.strings()
-                .alpha()
-                .numeric()
-                .withChars('\r', '\n', '"', ',')
                 .ofMinLength(1);
 
         var field = Arbitraries.oneOf(unquotedText, quotableText);
 
         return field
-                .list().ofSize(size)
+                .list().ofMinSize(1).ofMaxSize(size)
                 .list();
 
     }
