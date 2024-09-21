@@ -18,7 +18,9 @@ public class CsvTest implements AutoCloseable {
         var empty = aCsv.isEmpty() ? "empty": "[" + aCsv.get(0).size() + "; " + rangeStart + "-" + (rangeStart + rangeScale - 1) + "]";
         Statistics.collect(empty);
 
-        Assertions.assertThat(_dec.decode(_enc.encode(aCsv))).isEqualTo(aCsv);
+        var encoded = _enc.encode(aCsv);
+        Assertions.assertThat(_dec.decode(encoded)).isEqualTo(aCsv);
+        Assertions.assertThat(_enc.encode(_dec.decode(encoded))).isEqualTo(encoded);
     }
 
     @SuppressWarnings("unused")
