@@ -8,10 +8,6 @@ public interface CsvDecoder {
 
     default List<List<String>> decode(String csv) {
         if (csv == null || csv.isEmpty()) return List.of();
-        // TODO
-        //if (csv.length() <= 20) System.out.println("#### csv=<<" + csv + ">>");
-        //if (csv.contains("\"\n\",\"\n\"")) System.out.println("#### csv=<<" + csv + ">>");
-        var debug = csv.contains("\"\n\"");
 
         // token 分割
         var tokenizedCsv = new ArrayList<List<String>>();
@@ -25,15 +21,14 @@ public interface CsvDecoder {
                         if ((ch == ',' || ch == '\n') && lastCh.get() == '"' && token.get().chars().filter(c -> c == '"').count() % 2 == 0) {
                             tokenizedCsv.get(tokenizedCsv.size() - 1).add(token.toString());
                             token.get().setLength(0);
+                            if (ch == '\n') tokenizedCsv.add(new ArrayList<>());
                         } else {
                             token.get().append(ch);
                         }
                     } else {
                         if (ch == ',' || ch == '\n') {
-                            if (lastCh.get() != '"') {
-                                tokenizedCsv.get(tokenizedCsv.size() - 1).add(token.toString());
-                                token.get().setLength(0);
-                            }
+                            tokenizedCsv.get(tokenizedCsv.size() - 1).add(token.toString());
+                            token.get().setLength(0);
                             if (ch == '\n') tokenizedCsv.add(new ArrayList<>());
                         } else {
                             token.get().append(ch);
@@ -42,8 +37,6 @@ public interface CsvDecoder {
                     lastCh.set(ch);
                 });
         if (!token.get().isEmpty()) tokenizedCsv.get(tokenizedCsv.size() - 1).add(token.toString());
-
-        if (debug) System.out.println("#### tokenized=" + tokenizedCsv);
 
         return tokenizedCsv.stream()
                 .map(line ->
