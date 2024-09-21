@@ -8,6 +8,9 @@ public interface CsvDecoder {
 
     default List<List<String>> decode(String csv) {
         if (csv == null || csv.isEmpty()) return List.of();
+        // TODO
+        if (csv.length() <= 20) System.out.println("#### csv=<<" + csv + ">>");
+        //if (csv.indexOf('\n') >= 0) System.out.println("#### csv=<<" + csv + ">>");
 
         // token 分割
         var tokenizedCsv = new ArrayList<List<String>>();
@@ -39,20 +42,14 @@ public interface CsvDecoder {
         if (!token.get().isEmpty()) tokenizedCsv.get(tokenizedCsv.size() - 1).add(token.toString());
 
         return tokenizedCsv.stream()
-                .map(line ->
-                        // token 両端の " を除去  (ex. "abc" => abc )
-                        line.stream()
-                                .map(t -> t.startsWith("\"") && t.endsWith("\"") ? t.substring(1, t.length() - 1) : t)
-                                .toList()
-                )
                 .map(line -> {
-                    // token 境界が " であれば1個に連結  (ex. [ abc", "def ] => [ abc""def ] )
+                    // token 境界が " であれば1個に連結 & エスケープ解除  (ex. [ abc", "def ] => [ abc"def ] )
                     if (line.size() >= 2) {
                         var newLine = new ArrayList<String>();
                         newLine.add(line.get(0));
                         line.stream().skip(1).forEach(tk -> {
                             if (tk.startsWith("\"") && newLine.get(newLine.size() - 1).endsWith("\"")) {
-                                newLine.set(newLine.size() - 1, newLine.get(newLine.size() - 1) + tk);
+                                newLine.set(newLine.size() - 1, newLine.get(newLine.size() - 1) + tk.substring(1));
                             } else
                                 newLine.add(tk);
                         });
@@ -60,6 +57,12 @@ public interface CsvDecoder {
                     } else
                         return line;
                 })
+                .map(line ->
+                        // token 両端の " を除去  (ex. "abc" => abc )
+                        line.stream()
+                                .map(t -> t.startsWith("\"") && t.endsWith("\"") ? t.substring(1, t.length() - 1) : t)
+                                .toList()
+                )
                 .toList();
     }
 
