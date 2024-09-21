@@ -9,8 +9,9 @@ public interface CsvDecoder {
     default List<List<String>> decode(String csv) {
         if (csv == null || csv.isEmpty()) return List.of();
         // TODO
-        if (csv.length() <= 20) System.out.println("#### csv=<<" + csv + ">>");
-        //if (csv.indexOf('\n') >= 0) System.out.println("#### csv=<<" + csv + ">>");
+        //if (csv.length() <= 20) System.out.println("#### csv=<<" + csv + ">>");
+        //if (csv.contains("\"\n\",\"\n\"")) System.out.println("#### csv=<<" + csv + ">>");
+        var debug = csv.contains("\"\n\"");
 
         // token 分割
         var tokenizedCsv = new ArrayList<List<String>>();
@@ -21,10 +22,11 @@ public interface CsvDecoder {
                 .mapToObj(ch -> (char)ch)
                 .forEach(ch -> {
                     if (!token.get().isEmpty() && token.get().charAt(0) == '"') {
-                        token.get().append(ch);
-                        if (ch == '"') {
+                        if ((ch == ',' || ch == '\n') && lastCh.get() == '"' && token.get().chars().filter(c -> c == '"').count() % 2 == 0) {
                             tokenizedCsv.get(tokenizedCsv.size() - 1).add(token.toString());
                             token.get().setLength(0);
+                        } else {
+                            token.get().append(ch);
                         }
                     } else {
                         if (ch == ',' || ch == '\n') {
@@ -33,36 +35,39 @@ public interface CsvDecoder {
                                 token.get().setLength(0);
                             }
                             if (ch == '\n') tokenizedCsv.add(new ArrayList<>());
-                            return;
+                        } else {
+                            token.get().append(ch);
                         }
-                        token.get().append(ch);
                     }
                     lastCh.set(ch);
                 });
         if (!token.get().isEmpty()) tokenizedCsv.get(tokenizedCsv.size() - 1).add(token.toString());
 
+        if (debug) System.out.println("#### tokenized=" + tokenizedCsv);
+
         return tokenizedCsv.stream()
-                .map(line -> {
-                    // token 境界が " であれば1個に連結 & エスケープ解除  (ex. [ abc", "def ] => [ abc"def ] )
-                    if (line.size() >= 2) {
-                        var newLine = new ArrayList<String>();
-                        newLine.add(line.get(0));
-                        line.stream().skip(1).forEach(tk -> {
-                            if (tk.startsWith("\"") && newLine.get(newLine.size() - 1).endsWith("\"")) {
-                                newLine.set(newLine.size() - 1, newLine.get(newLine.size() - 1) + tk.substring(1));
-                            } else
-                                newLine.add(tk);
-                        });
-                        return newLine;
-                    } else
-                        return line;
-                })
                 .map(line ->
                         // token 両端の " を除去  (ex. "abc" => abc )
                         line.stream()
                                 .map(t -> t.startsWith("\"") && t.endsWith("\"") ? t.substring(1, t.length() - 1) : t)
+                                .map(t -> t.replaceAll("\"\"", "\""))
                                 .toList()
                 )
+//                .map(line -> {
+//                    // token 境界が " であれば1個に連結 & エスケープ解除  (ex. [ abc", "def ] => [ abc"def ] )
+//                    if (line.size() >= 2) {
+//                        var newLine = new ArrayList<String>();
+//                        newLine.add(line.get(0));
+//                        line.stream().skip(1).forEach(tk -> {
+//                            if (tk.startsWith("\"") && newLine.get(newLine.size() - 1).endsWith("\"")) {
+//                                newLine.set(newLine.size() - 1, newLine.get(newLine.size() - 1) + tk.substring(1));
+//                            } else
+//                                newLine.add(tk);
+//                        });
+//                        return newLine;
+//                    } else
+//                        return line;
+//                })
                 .toList();
     }
 
