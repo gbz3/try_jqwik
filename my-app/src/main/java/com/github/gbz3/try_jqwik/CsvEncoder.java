@@ -11,7 +11,7 @@ public interface CsvEncoder {
 
         return csv.stream()
                 .map(line -> line.stream()
-                        .map(field -> field.matches("\r|\n|\r\n|,")? "\"" + field + "\"": field)
+                        .map(field -> field.matches("[\n,]")? "\"" + field + "\"": field)
                         .collect(Collectors.joining(",")))
                 .collect(Collectors.joining(System.lineSeparator()));
     }
