@@ -18,6 +18,7 @@ public interface CsvDecoder {
                 .mapToObj(ch -> (char)ch)
                 .forEach(ch -> {
                     if (!token.get().isEmpty() && token.get().charAt(0) == '"') {
+                        // 二重引用符で括られたフィールドの終端判定（フィールド内の二重引用符の個数は偶数）
                         if ((ch == ',' || ch == '\n') && lastCh.get() == '"' && token.get().chars().filter(c -> c == '"').count() % 2 == 0) {
                             tokenizedCsv.get(tokenizedCsv.size() - 1).add(token.toString());
                             token.get().setLength(0);
@@ -26,6 +27,7 @@ public interface CsvDecoder {
                             token.get().append(ch);
                         }
                     } else {
+                        // 通常フィールドの終端判定
                         if (ch == ',' || ch == '\n') {
                             tokenizedCsv.get(tokenizedCsv.size() - 1).add(token.toString());
                             token.get().setLength(0);
@@ -46,21 +48,6 @@ public interface CsvDecoder {
                                 .map(t -> t.replaceAll("\"\"", "\""))
                                 .toList()
                 )
-//                .map(line -> {
-//                    // token 境界が " であれば1個に連結 & エスケープ解除  (ex. [ abc", "def ] => [ abc"def ] )
-//                    if (line.size() >= 2) {
-//                        var newLine = new ArrayList<String>();
-//                        newLine.add(line.get(0));
-//                        line.stream().skip(1).forEach(tk -> {
-//                            if (tk.startsWith("\"") && newLine.get(newLine.size() - 1).endsWith("\"")) {
-//                                newLine.set(newLine.size() - 1, newLine.get(newLine.size() - 1) + tk.substring(1));
-//                            } else
-//                                newLine.add(tk);
-//                        });
-//                        return newLine;
-//                    } else
-//                        return line;
-//                })
                 .toList();
     }
 

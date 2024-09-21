@@ -13,12 +13,12 @@ public class CsvTest implements AutoCloseable {
 
     @Property(tries = 1000)
     void symmetric(@ForAll("csvData") List<List<String>> aCsv) {
-        var empty = aCsv.isEmpty() ? "empty": "[" + aCsv.get(0).size() + "; " + aCsv.size() + "]";
-        //var sumOfSize = aCsv.isEmpty() ? "*": aCsv.stream().map(Map::size).reduce(Integer::sum).orElse(0);
+        var rangeScale = 10;
+        var rangeStart = aCsv.size() / rangeScale * rangeScale;
+        var empty = aCsv.isEmpty() ? "empty": "[" + aCsv.get(0).size() + "; " + rangeStart + "-" + (rangeStart + rangeScale - 1) + "]";
         Statistics.collect(empty);
 
-        final var encoded = _enc.encode(aCsv);
-        Assertions.assertThat(_dec.decode(encoded)).isEqualTo(aCsv);
+        Assertions.assertThat(_dec.decode(_enc.encode(aCsv))).isEqualTo(aCsv);
     }
 
     @SuppressWarnings("unused")
